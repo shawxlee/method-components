@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>简单时差计算器</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css">
+    <link rel="stylesheet" type="text/css" href="test.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+
+    <style type="text/css">
+    #result {
+    	width: 270px;
+    }
+    #history {
+    	width: 270px;
+    	height: 300px;
+    	overflow: hidden;
+    	display: none;
+    }
+    #upBtn {
+    	display: none;
+    }
+    </style>
+</head>
+<body>
+
+	<div class="container-fluid">
+		<div class="card m-3" style="width: 430px;">
+			<div class="card-header text-center">简单时差计算器</div>
+			<div class="card-body">
+				<form class="form-inline">
+					<div class="form-group m-2">
+						<label for="startTime">开始时间：</label>
+						<input type="text" id="startTime" placeholder="YYYY/MM/DD hh:mm:ss" class="form-control">&nbsp;
+						<button type="button" id="startNow" class="btn btn-outline-dark btn-sm">当前时间</button>
+					</div>
+					<div class="form-group m-2">
+						<label for="endTime">结束时间：</label>
+						<input type="text" id="endTime" placeholder="YYYY/MM/DD hh:mm:ss" class="form-control">&nbsp;
+						<button type="button" id="endNow" class="btn btn-outline-dark btn-sm">当前时间</button>
+					</div>
+				</form>
+			</div>
+			<div class="card-footer">
+				<button id="calc" class="btn btn-primary float-left ml-2">计算</button>
+				<input type="text" id="result" readonly class="text-center form-control float-left ml-2">
+				<span type="text" id="history" readonly class="text-center form-control float-left ml-2"></span>
+				&nbsp;
+				<button id="tglBtn" class="btn btn-light px-1" style="color: #ced4da;">
+					<span id="downBtn">&#9660</span>
+					<span id="upBtn">&#9650</span>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		$(function(){
+			function timeDiff(s,e){
+				var sDate = new Date(s);
+				var eDate = new Date(e);
+				var millDiff = eDate.getTime() - sDate.getTime();
+				var dayDiff = Math.floor(millDiff / (1000*60*60*24));
+				var dayRem = millDiff % (1000*60*60*24);
+				var hourDiff = Math.floor(dayRem / (1000*60*60));
+				var hourRem = dayRem % (1000*60*60);
+				var minDiff = Math.floor(hourRem / (1000*60));
+				var minRem = hourRem % (1000*60);
+				var secDiff = Math.round(minRem / 1000);
+				return dayDiff + " 天 " + hourDiff + " 时 " + minDiff + " 分 " + secDiff + " 秒 ";
+			};
+			function testPattern(t){
+				var reg = /^(?:(?!0000)[0-9]{4}([-/.])(?:(?:0[1-9]|1[0-2])([-/.])(?:0[1-9]|1[0-9]|2[0-8])|(?:0[13-9]|1[0-2])([-/.])(?:29|30)|(?:0[13578]|1[02])([-/.])31)|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)([-/.])02([-/.])29)\s([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
+				return reg.test(t);
+			};
+			$("#calc").click(function(){
+				var stVal = $("#startTime").val();
+				var etVal = $("#endTime").val();
+				var st = stVal.replace(/[-.]/g, "/");
+				var et = etVal.replace(/[-.]/g, "/");
+				if(testPattern(stVal) && testPattern(etVal)){
+					$("#result").val(timeDiff(st,et));
+					$("#history").prepend(timeDiff(st,et) + "<br>");
+				}
+				else{
+					$("#result").val("未获得结果（输入格式错误）").css("color", "red");
+				};
+			});
+			$("#startTime, #endTime").focus(function(){
+				$("#result").val("").css("color", "");
+			});
+			function nowTime(){
+				var nt = new Date();
+				var year = nt.getFullYear();
+				var month = nt.getMonth()+1;
+				var day = nt.getDate();
+				var hour = nt.getHours();
+				var min = nt.getMinutes();
+				var sec = nt.getSeconds();
+				month = month>9 ? month : "0"+month;
+				day = day>9 ? day : "0"+day;
+				hour = hour>9 ? hour : "0"+hour;
+				min = min>9 ? min : "0"+min;
+				sec = sec>9 ? sec : "0"+sec;
+				return year + "/" + month + "/" + day + " " + hour + ":" + min + ":" + sec;
+			};
+			$("#startNow").click(function(){
+				$("#startTime").val(nowTime());
+			});
+			$("#endNow").click(function(){
+				$("#endTime").val(nowTime());
+			});
+			$("#tglBtn").click(function(){
+				$("#result, #history, #downBtn, #upBtn").toggle();
+			});
+		})
+	</script>
+
+</body>
+</html>

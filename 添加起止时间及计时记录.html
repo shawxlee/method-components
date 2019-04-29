@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>添加计时记录</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+
+    <style type="text/css">
+        body {
+            width: 100vw;
+            height: 100vh;
+            line-height: 1;
+        }
+        .board, .addBtn {
+            width: 270px;
+            height: 160px;
+            float: left;
+        }
+        .addBtn {
+            border: 3px dotted #e9ecef;
+            background-color: rgba(233, 236, 239, .3);
+            line-height: 160px;
+            text-align: center;
+        }
+        .addBtn i {
+            color: #e9ecef;
+            font-size: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="example">
+		<div v-for="(item, index) in items" :key="index">
+            <div class="jumbotron mx-4 mt-4 mb-0 p-3 board">
+                <h6 class="text-center">第 {{ index+1 }} 次计时</h6>
+                <br>
+                <p>开始时间：{{ item.startTime }}</p>
+                <p>结束时间：{{ item.endTime }}</p>
+                <p>本次历时：{{ getDiff(item) }}</p>
+            </div>
+        </div>
+        <div class="mx-4 mt-4 mb-0 addBtn">
+            <a href="#addModal" data-toggle="modal" data-backdrop="static"><i class="fas fa-plus-circle"></i></a>
+        </div>
+        <div class="modal" id="addModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title">添加记录</h6>
+                        <button class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group my-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">开始时间：</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="YYYY/MM/DD hh:mm:ss" v-model="stInput" @focus.stop="onFocus">
+                        </div>
+                        <div class="input-group my-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">结束时间：</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="YYYY/MM/DD hh:mm:ss" v-model="etInput" @focus.stop="onFocus">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <span class="text-danger" v-show="isShow">时间格式有误，请重新输入！</span>&nbsp;
+                        <button class="btn btn-primary" @click.stop="onSubmit">提交</button>
+                        <button class="btn btn-secodary" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+
+
+	<script type="text/javascript">
+        var mh = {
+            modalHide: function(){
+                $('#addModal').modal('hide');
+            }
+        };
+        var vm = new Vue({
+            el: '#example',
+			data: {
+				items: [
+                {
+                    startTime: '2018/11/09 16:53:38',
+                    endTime: '2018/11/11 18:34:55'
+                },
+                {
+                    startTime: '2019/09/21 10:10:06',
+                    endTime: '2019/10/10 09:21:08'
+                },
+                ],
+                stInput: '',
+                etInput: '',
+                isShow: false
+			},
+			methods: {
+				getDiff: function (item) {
+                    var st = new Date(item.startTime);
+                    var et = new Date(item.endTime);
+                    var millDiff = et.getTime() - st.getTime();
+                    var dayDiff = Math.floor(millDiff / (1000*60*60*24));
+                    var dayRem = millDiff % (1000*60*60*24);
+                    var hourDiff = Math.floor(dayRem / (1000*60*60));
+                    var hourRem = dayRem % (1000*60*60);
+                    var minDiff = Math.floor(hourRem / (1000*60));
+                    var minRem = hourRem % (1000*60);
+                    var secDiff = Math.round(minRem / 1000);
+                    return dayDiff + "天" + hourDiff + "时" + minDiff + "分" + secDiff + "秒";
+                },
+                onSubmit: function(){
+                    if(this.testTime(this.stInput, this.etInput)){
+                        this.items.push(
+                        {
+                            startTime: this.stInput,
+                            endTime: this.etInput
+                        },
+                        );
+                        mh.modalHide();
+                    }
+                    else{
+                        this.isShow = true;
+                    };
+                },
+                testTime: function(s){
+                    var reg = /^\d{4}[/]([0][1-9]|(1[0-2]))[/]([1-9]|([012]\d)|(3[01]))([ \t\n\x0B\f\r])(([0-1]{1}[0-9]{1})|([2]{1}[0-4]{1}))([:])(([0-5]{1}[0-9]{1}|[6]{1}[0]{1}))([:])((([0-5]{1}[0-9]{1}|[6]{1}[0]{1})))$/;
+                    return reg.test(s);
+                },
+                onFocus: function(){
+                    this.isShow = false;
+                }
+			}
+		})
+	</script>
+
+</body>
+</html>
